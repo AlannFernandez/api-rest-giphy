@@ -1,25 +1,107 @@
 <?php
 
-namespace Tests\Unit;
+namespace App\Http\Controllers\api;
 
-use Tests\TestCase;
-use App\Http\Controllers\api\AuthController;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use App\Services\AuthService;
 
-class AuthControllerUnitTest extends TestCase
+class AuthController extends Controller
 {
-    use RefreshDatabase; // Utiliza esta trait para asegurarte de que las pruebas no afecten la base de datos de producción
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
 
     /**
-     * Test login endpoint.
+     * User registration endpoint.
      *
-     * @return void
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function test_login()
+    public function register(Request $request)
     {
-        // Resto del contenido de la prueba...
+        try {
+            
+            $validatedData = $request->validate([
+                'name' => 'required|max:255',
+                'email' => 'required|email|unique:users',
+                'password' => 'required'
+            ]);
+            
+            $validatedData['password'] = bcrypt($validatedData['password']);
+            
+            $user = User::create($validatedData);
+            
+            $tokenResult = $user->createToken('authToken');
+            $token = $tokenResult->accessToken;
+            
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
+
+            return $this->successResponse($response, "User created successfully.");
+
+        } catch (\Throwable $th) {
+            
+            return $this->errorResponse($th->getMessage(), 400);
+        }
+    }
+
+    /**
+     * User login endpoint.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login(Request $request)
+    {
+        try {
+            
+            $validatedData = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required'
+            ]);
+            
+            if (!Auth::attempt($validatedData)) {
+                return $this->errorResponse('Invalid credentials', 200);
+            }
+            
+            $user = Auth::user();
+            
+            $tokenResult = $user->createToken('authToken');
+            $token = $tokenResult->accessToken;
+
+            
+            return $this->successResponse(['token' => $token], "User logged in successfully.");
+
+        } catch (\Throwable $th) {
+            
+            return $this->errorResponse($th->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Get information of the authenticated user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function userInfo(Request $request)
+    {
+        try {            
+            $user = $this->authService->getApiUser();
+            
+            return $this->successResponse($user);
+
+        } catch (\Throwable $th) {
+            
+            return $this->errorResponse($th->getMessage(), 400);
+        }
     }
 }

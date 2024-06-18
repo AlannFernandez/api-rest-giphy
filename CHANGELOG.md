@@ -8,3 +8,9 @@
 
 #### Fixed
 - Fixed AuthController.php file because it was overwritten.
+
+### [Version 1.0.2] - 2024-06-18
+
+#### Added
+- Add the postman collection and a readme indicating how to use it.
+- Added data flow, use cases and der graphs.

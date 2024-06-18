@@ -41,7 +41,14 @@ cp .env.example .env
 ```
 Asegúrate de configurar correctamente las variables de entorno para la base de datos y las claves de la aplicación.
 
-### 3. Construir y Levantar los Contenedores
+### 3. Instalar dependencias
+Una vez clonado el proyecto deberas ejecutar el comando
+
+```sh
+composer install
+```
+
+### 4. Construir y Levantar los Contenedores
 
 Construye y levanta los contenedores Docker utilizando Docker Compose, asegurate de estar en carpeta raiz del proyecto para ejecutrar el siguiente comando:
 ``` sh
@@ -54,18 +61,18 @@ Esto construirá los contenedores y los levantará. Los servicios que se levanta
 - **web:** Contenedor para el servidor Nginx.
 - **db:** Contenedor para la base de datos MySQL.
 
-### 4. Scripts automaticos 
+### 5. Scripts automaticos 
 El proyecto está configurado para correr unos comandos automaticamente mientras hace el despligue, estos comandos se encuentran en el archivo `entrypoint.sh` . Este archivo puede ser editado pero hay que tener en cuenta los cambios que se realizen.
 
 
-### 5. Ejecutar Seeders
+### 6. Ejecutar Seeders
 Ejecuta los seeders para la creación de usuarios en la base de datos:
 
 ``` sh
 docker-compose exec app php artisan db:seed --force
 ```
 
-### 6. Generar Claves de Passport
+### 7. Generar Claves de Passport
 Genera las claves necesarias para Laravel Passport:
 
 ``` sh

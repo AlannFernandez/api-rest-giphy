@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    depends_on:
+      - db
+    volumes:
+      - .:/var/www/html
+      # - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./.docker/nginx/nginx.config:/etc/nginx/conf.d/default.conf 
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=base64:ElIk2QUE4+bSX8PURr2BAFCc4bxqIo65vc7F21721P0=
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=giphy
+      - DB_USERNAME=giphy_user
+      - DB_PASSWORD=9xPO/MJC6SxQK08zIswPtw==
+      - TOKEN_TTL=30
+    expose:
+      - "9000"
+    command: ["sh", "/var/www/html/.docker/entrypoint.sh"]
+
+  web:
+    image: nginx:latest
+    container_name: nginx_web
+    depends_on:
+      - app
+    volumes:
+      - .:/var/www/html
+      - ./.docker/nginx/nginx.config:/etc/nginx/conf.d/default.conf 
+    ports:
+      - "8000:80"
+
+  db:
+    image: mysql:8.0
+    container_name: laravel_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_DATABASE: giphy
+      MYSQL_USER: giphy_user
+      MYSQL_PASSWORD: 9xPO/MJC6SxQK08zIswPtw==
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  db_data:
